@@ -10,12 +10,12 @@
 #include "samples/Cowbell_sample.h"
 
 enum class SynthPreset {
-    //% preset1
-    Preset1 = 0,
-    //% preset2
-    Preset2,
-    //% preset3
-    Preset3,
+    //% sound1
+    Sound1 = 0,
+    //% sound2
+    Sound2,
+    //% sound3
+    Sound3,
 };
 
 enum class SynthParameter {

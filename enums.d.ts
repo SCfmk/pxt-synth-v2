@@ -2,12 +2,12 @@
 
 
     declare const enum SynthPreset {
-    //% preset1
-    Preset1 = 0,
-    //% preset2
-    Preset2 = 1,
-    //% preset3
-    Preset3 = 2,
+    //% sound1
+    Sound1 = 0,
+    //% sound2
+    Sound2 = 1,
+    //% sound3
+    Sound3 = 2,
     }
 
 

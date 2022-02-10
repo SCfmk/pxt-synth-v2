@@ -12,7 +12,7 @@
         "main.ts",
         "synth.cpp",
         "MicroSynth.h",
-		"MicroSynth.cpp",
+        "MicroSynth.cpp",
         "shims.d.ts",
         "enums.d.ts",
         "README.md",
@@ -22,10 +22,11 @@
         "samples/CL_sample.h",
         "samples/HH_sample.h",
         "samples/OHH_sample.h",
-        "samples/Cowbell_sample.h"
+        "samples/Cowbell_sample.h",
+        "helpers.ts"
     ],
     "targetVersions": {
-        "target": "4.0.16",
+        "target": "4.0.17",
         "targetId": "microbit"
     },
     "supportedTargets": [
