@@ -1,11 +1,25 @@
 /*
-  ==============================================================================
+MIT License
 
-    MicroSynth.h
-    Created: 3 Nov 2021 2:05:33pm
-    Author:  Thom Johansen
+Copyright (c) 2022 Thom Johansen
 
-  ==============================================================================
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 */
 
 #pragma once
@@ -92,28 +106,19 @@ struct Preset
     float vibAmount;
     float gain;
     float tune;
+    float noise;
     bool ampGate;
 };
 
-// zavilishin svf
+// Vadim Zavilishin's TPT state variable filter from "The Art of VA Filter Design"
 class SVF
 {
     float g_, g1_, d_;
     float s1_, s2_;
     float tan(float x)
     {
-#if 0
-        // Clip coefficient to about 100.
-        x = x < 0.497f ? x : 0.497f;
-        return tanf(_PI*x);
-#elif 0
-        // below 8 hz version
-        const float a = 3.736e-01*_PI*_PI*_PI;
-        return x*(_PI + a*x*x);
-#else
         // stolen from mutable instruments
-        // TODO for 48 kHz
-        // TODO check out license, preferably replace with 44.1khz version
+        // TODO for 48 kHz, try to make a 44.1 khz version
         const float pi_two = _PI*_PI;
         const float pi_three = pi_two*_PI;
         const float pi_five = pi_three*pi_two;
@@ -121,7 +126,6 @@ class SVF
         const float b = 1.823e-01f*pi_five;
         const float f2 = x*x;
         return x*(_PI + f2*(a + b*f2));
-#endif
     }
 public:
     SVF()
@@ -138,7 +142,6 @@ public:
     }
     float process(float x, FilterType f = FilterType::LPF)
     {
-#if 1
         const float hp = (x - g1_*s1_ - s2_)*d_;
         const float v1 = g_*hp;
         const float bp = v1 + s1_;
@@ -155,15 +158,6 @@ public:
         case FilterType::HPF:
             return hp;
         }
-#else // no hp
-        const float bp = (g_*(x - s2_) + s1_)*d_;
-        const float v1 = bp - s1_;
-        s1_ = bp + v1;
-        const float v2 = g_*bp;
-        const float lp = v2 + s2_;
-        s2_ = lp + v2;
-        return lp;
-#endif
     }
     void reset()
     {
@@ -302,6 +296,7 @@ class Voice
     int8_t note_ = -1;      // -1 means inactive voice
     bool stopping_ = false; // set to true after we've received a note off
     const Preset* preset_;
+    int32_t noise_;
     void apply_preset()
     {
         const Preset& p = *preset_;
@@ -336,7 +331,9 @@ public:
         smoothedGate_ += (gate - smoothedGate_)*0.005f;
         const float amp_env = preset_->ampGate ? smoothedGate_ : env;
         auto oscs = osc1*preset_->osc1Vol + osc_[1].processPM(preset_->fmAmount*osc1)*preset_->osc2Vol;
-        auto out = gain_*amp_env*filter_.process(oscs, preset_->vcfType);
+        noise_ = 1664525*noise_ + 1013904223;
+        const float noise = preset_->noise*noise_*1.f/std::numeric_limits<int32_t>::max();
+        auto out = gain_*amp_env*filter_.process(oscs + noise, preset_->vcfType);
         return out;
     }
     void process(float* buf, int num)

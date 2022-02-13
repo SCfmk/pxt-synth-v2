@@ -1,3 +1,27 @@
+/*
+MIT License
+
+Copyright (c) 2022 Thom Johansen
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
 #include "pxt.h"
 #include "MicroBit.h"
 #include "MicroSynth.h"
@@ -54,7 +78,8 @@ enum class SynthParameter {
     LFOShape,
     VibratoFreq,
     VibratoAmount,
-    Tune
+    Tune,
+    Noise
 };
 
 enum class Sample {
@@ -108,10 +133,31 @@ public:
 	}
 };
 
+AudioTest atest(synth);
+bool audioInited = false;
+
+static void audioInit()
+{
+    // manage speaker from PXT
+    //uBit.audio.setSpeakerEnabled(false);
+    uBit.audio.setVolume(255);
+    uBit.audio.enable();
+    uBit.audio.mixer.addChannel(atest);
+    atest.go();
+    audioInited = true;
+    for (int i = 0; i < 3; ++i) {
+        memset(&presets[i], 0, sizeof(Preset));
+        presets[i].osc1Vol = presets[i].vcfCutoff = presets[i].gain = 0.5f;
+        presets[i].ampGate = true;
+    }
+}
+
 //%
 void setParameter(SynthPreset preset, SynthParameter param, float val)
 {
     auto& p = presets[static_cast<int>(preset)];
+
+    if (!audioInited) audioInit();
     switch (param) {
     case SynthParameter::Osc1Shape:
         p.osc1Shape = static_cast<OscType>(static_cast<int>(val));
@@ -194,6 +240,9 @@ void setParameter(SynthPreset preset, SynthParameter param, float val)
     case SynthParameter::Tune:
         p.tune = val;
         break;
+    case SynthParameter::Noise:
+        p.noise = val;
+        break;
     default:
         break;
     }
@@ -203,6 +252,8 @@ void setParameter(SynthPreset preset, SynthParameter param, float val)
 float getParameter(SynthPreset preset, SynthParameter param)
 {
     const auto& p = presets[static_cast<int>(preset)];
+
+    if (!audioInited) audioInit();
     switch (param) {
     case SynthParameter::Osc1Shape:
         return static_cast<float>(p.osc1Shape);
@@ -258,27 +309,10 @@ float getParameter(SynthPreset preset, SynthParameter param)
         return p.vibAmount;
     case SynthParameter::Tune:
         return p.tune;
+    case SynthParameter::Noise:
+        return p.noise;
     default:
         return 0.f;
-    }
-}
-
-AudioTest atest(synth);
-bool audioInited = false;	
-
-static void audioInit()
-{
-    // manage speaker from PXT
-    //uBit.audio.setSpeakerEnabled(false);
-    uBit.audio.setVolume(255);
-    uBit.audio.enable();
-    uBit.audio.mixer.addChannel(atest);
-    atest.go();
-    audioInited = true;
-    for (int i = 0; i < 3; ++i) {
-        memset(&presets[i], 0, sizeof(Preset));
-        presets[i].osc1Vol = presets[i].vcfCutoff = presets[i].gain = 0.5f;
-        presets[i].ampGate = true;
     }
 }
 
