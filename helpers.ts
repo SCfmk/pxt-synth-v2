@@ -21,6 +21,12 @@ enum sequences {
     sequenceFour = 84
 }
 
+enum gateOrEnv {
+    //%block="gate"
+    gate = 1,
+    //%block="envelope"
+    ebvelope = 0
+}
 
 enum transpositions {
     //% block="same as oscillator 1"
@@ -84,13 +90,25 @@ namespace synthBlocks {
             } else if (currentParamString.includes("LPF")) {
                 console.log("caught lowpass")
                 thisParamVal = 0
-            } else {
+            } else if (currentParamString.includes("HPF")) {
+                console.log("caught highpass")
+                thisParamVal = 1
+            } else if (currentParamString.includes("BPF")) {
+                console.log("caught bandpass")
+                thisParamVal = 2
+            } else if (currentParamString.includes("false")) {
+            console.log("caught ampgate")
+            thisParamVal = 0
+            } else if (currentParamString.includes("true")) {
+                console.log("caught ampgate")
+                thisParamVal = 1
+            }
+             else {
                 thisParamVal = parseFloat(splittedString[i])
             }
             console.log("parameter " + i + " is " + thisParamVal)
 
             orchestra.setParameter(preset, i, thisParamVal)
-
         }
     }
 
@@ -135,12 +153,13 @@ namespace synthBlocks {
      * setup your synth sound
      * @param preset select your preset
      */
-    //blockId="MBORCH_makeASimplerSequencer" block="make a simple sequencer:|number of steps = $NumberOfSteps|the instrument I am controlling is called $masterName the first sound I want to control is $note1|the second sound I want to control is $note2|the third sound I want to control is $note3|the fourth sound I want to control is $note4"
-    //% blockID="setupSynthSound" block="Set sound for Preset $preset | Oscillator 1|shape $osc1Shape|level $myOsc1Gain|pulse width $myPW1|pulse width modulation $myPWM1 | Oscillator 2|shape $osc2Shape|level $myOsc2Gain|pulse width $myPW2|pulse width modulation $myPWM2|transposition $osc2Transpose | Filter|cutoff $filtCut|resonance $filtRes|envelope amount $filtEnv|key follow amount $filtKey|LFO amount $filtLFO | Envelope|Attack $myEnvA|Decay $myEnvD|Sustain $myEnvS|Release $myEnvR | LFO frequency in Hz $myLfoFreq|LFO shape $myLFOShape|vibrato frequency in Hz $myVibFreq|vibrato amount $myVibAmount|FM amount $myFMAmount | sound volume $myLevel"
+    //% blockID="setupSynthSound" block="Set sound: $preset | Oscillator 1|shape $osc1Shape|level $myOsc1Gain|pulse width $myPW1|pulse width modulation $myPWM1 | Oscillator 2|shape $osc2Shape|level $myOsc2Gain|pulse width $myPW2|pulse width modulation $myPWM2|transposition $osc2Transpose | Filter|cutoff $filtCut|resonance $filtRes|envelope amount $filtEnv|key follow amount $filtKey|LFO amount $filtLFO  | Envelope|Attack $myEnvA|Decay $myEnvD|Sustain $myEnvS|Release $myEnvR | amplitude $gateEnv | LFO frequency in Hz $myLfoFreq|LFO shape $myLFOShape|vibrato frequency in Hz $myVibFreq|vibrato amount $myVibAmount|FM amount $myFMAmount | sound volume $myLevel"
     //% myOsc1Gain.min=0 myOsc1Gain.max=100
     //% myOsc1Gain.defl=50
     //% myOsc2Gain.min=0 myOsc2Gain.max=100
     //% myOsc2Gain.defl=50
+    //% osc2Transpose.defl=0
+    //% osc2Transpose.min=-24 osc2Transpose.max=24
     //% myPW1.min=0 myPW1.max=100
     //% myPW1.defl=50
     //% myPWM1.min=0 myPWM1.max=100
@@ -165,37 +184,12 @@ namespace synthBlocks {
     //% myLevel.min=0 myLevel.max=100
     //% myLevel.defl=80
     //% LFOFreq.defl = 1 
-
-    export function setupSound(preset: SynthPreset, osc1Shape: oscShapes, osc2Shape: oscShapes, myOsc1Gain: number, myOsc2Gain: number, osc2Transpose: transpositions, myPW1: number, myPWM1: number, myPW2: number, myPWM2: number, filtCut: number, filtRes: number, filtEnv: number, filtKey: number, filtLFO: number, myEnvA: number, myEnvD: number, myEnvS: number, myEnvR: number, myLfoFreq: number, myVibFreq: number, myVibAmount: number, myLevel: number, myLFOShape: oscShapes, myFMAmount: number): void {
+    //% weight=0
+    export function setupSound(preset: SynthPreset, osc1Shape: oscShapes, osc2Shape: oscShapes, myOsc1Gain: number, myOsc2Gain: number, osc2Transpose: number, myPW1: number, myPWM1: number, myPW2: number, myPWM2: number, filtCut: number, filtRes: number, filtEnv: number, filtKey: number, filtLFO: number,gateEnv: gateOrEnv, myEnvA: number, myEnvD: number, myEnvS: number, myEnvR: number, myLfoFreq: number, myVibFreq: number, myVibAmount: number, myLevel: number, myLFOShape: oscShapes, myFMAmount: number): void {
+        orchestra.note(0,1,0);
         orchestra.setParameter(preset, SynthParameter.Osc1Shape, osc1Shape)
         orchestra.setParameter(preset, SynthParameter.Osc2Shape, osc2Shape)
-        let myOsc2Transpose = 0
-        switch (osc2Transpose) {
-            case 0:
-                myOsc2Transpose = 1
-                break
-
-            case 2:
-                myOsc2Transpose = 4
-                break
-
-            case 1:
-                myOsc2Transpose = 2
-                break
-
-            case 3:
-                myOsc2Transpose = 0.5
-                break
-
-            case 4:
-                myOsc2Transpose = 0.25
-                break
-
-            case 5:
-                myOsc2Transpose = 1.5
-                break
-        }
-        orchestra.setParameter(preset, SynthParameter.Osc2Transpose, myOsc2Transpose)
+        orchestra.setParameter(preset, SynthParameter.Osc2Transpose, osc2Transpose)
         orchestra.setParameter(preset, SynthParameter.Osc1Gain, pins.map(myOsc1Gain, 0, 100, 0, 1))
         orchestra.setParameter(preset, SynthParameter.Osc2Gain, pins.map(myOsc2Gain, 0, 100, 0, 1))
         orchestra.setParameter(preset, SynthParameter.Cutoff, pins.map(filtCut, 0, 100, 0, 1))
@@ -217,6 +211,8 @@ namespace synthBlocks {
         orchestra.setParameter(preset, SynthParameter.VibratoFreq, pins.map(myVibFreq, 0, 100, 0, 10))
         orchestra.setParameter(preset, SynthParameter.LFOShape, myLFOShape)
         orchestra.setParameter(preset, SynthParameter.OscFm, myFMAmount)
+        orchestra.setParameter(preset, SynthParameter.Tune, 0)
+        orchestra.setParameter(preset, SynthParameter.AmpGate, gateEnv)
     }
 
 }
