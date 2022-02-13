@@ -65,7 +65,7 @@ namespace synthBlocks {
         let splittedString = myString.split(",")
 
         ///////
-        splittedString.splice(9, 1); // remove filterType 
+        //splittedString.splice(9, 1); // remove filterType 
         ///////
 
         for (let i = 0; i < splittedString.length; i++) {
@@ -74,12 +74,16 @@ namespace synthBlocks {
             let currentParamString = splittedString[i]
             if (currentParamString.includes("Saw")) {
                 console.log("caught saw")
+                thisParamVal = 0
             } else if (currentParamString.includes("Pulse")) {
                 console.log("caught pulse")
+                thisParamVal = 1
             } else if (currentParamString.includes("Triangle")) {
                 console.log("caught triangle")
+                thisParamVal = 2
             } else if (currentParamString.includes("LPF")) {
-                console.log("caught filtertype subtracting 1 from i")
+                console.log("caught lowpass")
+                thisParamVal = 0
             } else {
                 thisParamVal = parseFloat(splittedString[i])
             }
