@@ -94,7 +94,7 @@ enum class Sample {
 //% block="Orch blocks"
 namespace orchestra {
 
-static constexpr int NumVoices = 8;
+static constexpr int NumVoices = 7;
 
 Preset presets[3];
 Synth<NumVoices> synth;
