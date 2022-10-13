@@ -182,22 +182,15 @@ namespace synthBlocks {
     //% duration.defl=200
     export function playSynthNote(note: number, duration: number, velocity: number, voice: SynthPreset): void {
         //console.log(note)
-        if (synthIsRunningInSimulator) {
-            music.playTone(note, duration)
-            //music.playTone(noteFreq[note % noteFreq.length], duration)
-        } else {
-            for (let i = 0; i < helperNoteFreq.length; i++) {
-                //let noteNumber = 440 * (pow(2, (i - 69) / 12)
-
-
-                if (helperNoteFreq[i] == note) {
-                    orchestra.note(i + 48, duration, velocity, voice)
-                    //console.log("used voice" + voice)
-                }
+        let calcNoteNumber =Math.round((12 * Math.log(note / 220) / Math.log(2)) + 57.01);
+            orchestra.note(calcNoteNumber, duration, velocity, voice)
+            //console.log("actual freq = " + note)
+            //console.log("calcNote = " + calcNoteNumber)
+            //console.log("-")
+            if (synthIsRunningInSimulator) {
+                music.playTone(note, duration)
             }
-        }
     }
-
 
     //%block="start parallell| $seqSelex"
     export function startParallelSequence(seqSelex: sequences): void {

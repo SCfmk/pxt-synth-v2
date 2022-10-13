@@ -9,7 +9,6 @@
     },
     "files": [
         "main.blocks",
-        "main.ts",
         "synth.cpp",
         "MicroSynth.h",
         "MicroSynth.cpp",
@@ -23,10 +22,11 @@
         "samples/HH_sample.h",
         "samples/OHH_sample.h",
         "samples/Cowbell_sample.h",
-        "helpers.ts"
+        "helpers.ts",
+        "main.ts"
     ],
     "targetVersions": {
-        "target": "4.0.17",
+        "target": "5.0.12",
         "targetId": "microbit"
     },
     "supportedTargets": [
